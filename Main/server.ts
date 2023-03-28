@@ -8,7 +8,7 @@ const app = express();
 // external imports:
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const mongoose = require("mongoose");
+import mongoose from 'mongoose'
 const PORT = 8081 || process.env.PORT;
 
 // DB connection
