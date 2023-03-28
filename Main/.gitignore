@@ -1,0 +1,12 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+.vscode
+.env
+.idea
+/.idea
+/node_modules
+/MicroServices/analytics/node_modules
+/MicroServices/chat/node_modules
