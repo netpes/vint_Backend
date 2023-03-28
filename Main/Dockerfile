@@ -17,4 +17,4 @@ COPY . .
 # If you are building your code for production
 EXPOSE 8081
 #EXPOSE 2000
-CMD [ "node", "Server.js" ]
+CMD [ "node", "server.ts" ]
