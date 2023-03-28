@@ -1,5 +1,5 @@
 {
-  "name": "vint_backend",
+  "name": "vint_main_backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -13,7 +13,7 @@
     "url": "git+https://github.com/netpes/vint_Backend.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Vint.inc",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/netpes/vint_Backend/issues"
