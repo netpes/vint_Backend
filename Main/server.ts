@@ -2,7 +2,7 @@
 require("dotenv").config();
 
 // server imports:
-const express = require("express");
+import express from "express"
 const app = express();
 
 // external imports:
@@ -10,6 +10,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const PORT = 8081 || process.env.PORT;
+const productRoutes = require("./routes/productRoute")
 
 // DB connection
 mongoose
@@ -30,7 +31,7 @@ app.set("routes", __dirname + "/routes");
 app.use(cors());
 
 // routes define
-
+app.use("/product", productRoutes);
 
 // Server listener
 app.listen(PORT, () => console.log("connected: " + PORT));

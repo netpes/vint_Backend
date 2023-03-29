@@ -42,10 +42,11 @@ module.exports = {
       });
       // @ts-ignore
       await product.save();
-      return true;
+      res.send(true)
     } catch (err) {
       console.log(err);
       return false;
+      res.send(false);
     }
   },
   EditProduct: async (req: Request, res: Response) => {
