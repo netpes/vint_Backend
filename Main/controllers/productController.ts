@@ -86,6 +86,7 @@ module.exports = {
         res.send(result);
       });
     } catch (err) {
+      res.send(false);
       console.log(err);
     }
   },
