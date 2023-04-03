@@ -4,8 +4,8 @@ const Users = require("../models/userModel");
 const Products = require("../models/productModel");
 const { removeDuplicates, GetTags } = require("../assets/productFunctions");
 //Types:
-import { SingleProduct } from "./types/productTypes";
 import { Request, Response } from "express";
+import { SingleProduct } from "./types";
 
 module.exports = {
   CreateProduct: async (req: Request, res: Response) => {
