@@ -42,7 +42,7 @@ module.exports = {
       });
       // @ts-ignore
       await product.save();
-      res.send(true)
+      res.send(true);
     } catch (err) {
       console.log(err);
       return false;
@@ -88,6 +88,40 @@ module.exports = {
     } catch (err) {
       res.send(false);
       console.log(err);
+    }
+  },
+  DeleteProduct: async (req: Request, res: Response) => {
+    try {
+      const { productId, userId } = req.body;
+      Products.findOneAndDelete({ _id: productId, seller: userId }).then(
+        (result) => {
+          res.send(result);
+        }
+      );
+    } catch (err) {
+      console.log(err);
+      res.send(err);
+    }
+  },
+  GetProductById: (req: Request, res: Response) => {
+    try {
+      const { productId } = req.body;
+      Products.findOne({ _id: productId }).then((result) => {
+        res.send(result);
+      });
+    } catch (err) {
+      console.log(err);
+      res.send(err);
+    }
+  },
+  GetFeed: async (req: Request, res: Response) => {
+    try {
+      Products.find().then((result) => {
+        res.send(result);
+      });
+    } catch (err) {
+      console.log(err);
+      res.send(err);
     }
   },
 };

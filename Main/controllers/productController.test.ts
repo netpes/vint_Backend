@@ -39,3 +39,31 @@ describe("Edit product", () => {
     expect(res.data).toBeTruthy();
   });
 });
+describe("get Feed", () => {
+  test("get Feed", async () => {
+    const res = await axios.get("http://localhost:8081/product/getFeed");
+    console.log(res.data)
+    expect(res.data).toBeTruthy();
+  });
+})
+describe("delete product", () => {
+  test("delete product", async () => {
+    const body= {
+      productId: "642aa47642fa445f12ebf471",
+      userId: "6412b56a782e9380f0d415fc",
+    };
+    const res = await axios.post("http://localhost:8081/product/deleteProduct", body);
+    console.log(res.data)
+    expect(res.data).toBeTruthy();
+  })
+})
+describe("GET product BY ID", () => {
+  test("GET product BY ID", async () => {
+    const body= {
+      productId: "6412c802a259648cb1fb64ed"
+    };
+    const res = await axios.post("http://localhost:8081/product/getProductById", body);
+    console.log(res.data)
+    expect(res.data).toBeTruthy();
+  })
+})
