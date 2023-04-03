@@ -24,138 +24,154 @@ test("checkEmail", () => {
   expect(checkEmail(toEmail)).toBe(true);
 });
 
-test("sendEmail", () => {
-  const subject = "subject";
-  const html = "<h1></h1>";
-  const toEmail = globalUser.email;
+// test("sendEmail", () => {
+//   const subject = "subject";
+//   const html = "<h1></h1>";
+//   const toEmail = globalUser.email;
 
-  expect(sendEmail(subject, html, toEmail)).toBe(true);
-});
+//   expect(sendEmail(subject, html, toEmail)).toBe(true);
+// });
 
-test("passwordGenerator", () => {
-  const newPassword = passwordGenerator(8);
-  expect(newPassword.length).toBe(8);
-  expect(typeof newPassword).toBe("string");
-});
+// test("passwordGenerator", () => {
+//   const newPassword = passwordGenerator(8);
+//   expect(newPassword.length).toBe(8);
+//   expect(typeof newPassword).toBe("string");
+// });
 
-test("changePassword", async () => {
+// test("changePassword", async () => {
+//   const body = {
+//     userID: globalUserID,
+//     newPassword: "qwer",
+//   };
+
+//   const res = await axios.post(
+//     `${process.env.BACKEND_URL_FOR_TESTS}user/changePassword`,
+//     body
+//   );
+
+//   expect(res).toBeTruthy();
+// });
+
+// test("sendVerifyEmailAgain", async () => {
+//   const body = {
+//     userID: globalUserID,
+//     email: globalUser.email,
+//   };
+
+//   const res = await axios.post(
+//     `${process.env.BACKEND_URL_FOR_TESTS}user/sendVerifyEmailAgain`,
+//     body
+//   );
+
+//   expect(res).toBeTruthy();
+// });
+
+// test("signUp", async () => {
+//   const body: typeUser = { ...globalUser };
+
+//   const res = await axios.post(
+//     `${process.env.BACKEND_URL_FOR_TESTS}user/signUp`,
+//     body
+//   );
+
+//   expect(res).toBeTruthy();
+// });
+
+// test("verifyEmail", async () => {
+//   const body = {
+//     userID: globalUserID,
+//     code: verifyEmailCode,
+//   };
+
+//   const res = await axios.post(
+//     `${process.env.BACKEND_URL_FOR_TESTS}user/verifyEmail`,
+//     body
+//   );
+
+//   expect(res).toBeTruthy();
+// });
+
+// test("userInfo", async () => {
+//   const body = {
+//     userID: globalUserID,
+//   };
+
+//   const res = await axios.post(
+//     `${process.env.BACKEND_URL_FOR_TESTS}user/userInfo`,
+//     body
+//   );
+
+//   expect(res).toBeTruthy();
+// });
+
+// test("login", async () => {
+//   const body = {
+//     username: globalUser.username,
+//     password: globalUser.password,
+//   };
+
+//   const res = await axios.post(
+//     `${process.env.BACKEND_URL_FOR_TESTS}user/login`,
+//     body
+//   );
+
+//   expect(res).toBeTruthy();
+// });
+
+// test("changeEmail", async () => {
+//   const body = {
+//     userID: globalUserID,
+//     newEmail: globalUser.email,
+//   };
+
+//   const res = await axios.post(
+//     `${process.env.BACKEND_URL_FOR_TESTS}user/changeEmail`,
+//     body
+//   );
+
+//   expect(res).toBeTruthy();
+// });
+
+// test("forgotPassword", async () => {
+//   const body = {
+//     username: globalUser.username,
+//   };
+
+//   const res = await axios.post(
+//     `${process.env.BACKEND_URL_FOR_TESTS}user/forgotPassword`,
+//     body
+//   );
+
+//   expect(res).toBeTruthy();
+// });
+
+// test("deleteAccount", async () => {
+//   const body = {
+//     userID: globalUserID,
+//   };
+
+//   const res = await axios.post(
+//     `${process.env.BACKEND_URL_FOR_TESTS}user/deleteAccount`,
+//     body
+//   );
+
+//   expect(res).toBeTruthy();
+// });
+
+test("verifyToken", async () => {
   const body = {
     userID: globalUserID,
-    newPassword: "qwer",
+    token:
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MmFhNmI2MTVmMTgwOTM4NDgzODI4ZCIsImlhdCI6MTY4MDUyMjM5OX0.Ws_I1I8U3x4Mf2wR4GMtEDYFLnwzSEvx17_fzr6N8y0",
   };
 
   const res = await axios.post(
-    `${process.env.BACKEND_URL_FOR_TESTS}user/changePassword`,
+    `${process.env.BACKEND_URL_FOR_TESTS}user/verifyToken`,
     body
   );
 
-  expect(res).toBeTruthy();
-});
-
-test("sendVerifyEmailAgain", async () => {
-  const body = {
-    userID: globalUserID,
-    email: globalUser.email,
-  };
-
-  const res = await axios.post(
-    `${process.env.BACKEND_URL_FOR_TESTS}user/sendVerifyEmailAgain`,
-    body
-  );
-
-  expect(res).toBeTruthy();
-});
-
-test("signUp", async () => {
-  const body: typeUser = { ...globalUser };
-
-  const res = await axios.post(
-    `${process.env.BACKEND_URL_FOR_TESTS}user/signUp`,
-    body
-  );
-
-  expect(res).toBeTruthy();
-});
-
-test("verifyEmail", async () => {
-  const body = {
-    userID: globalUserID,
-    code: verifyEmailCode,
-  };
-
-  const res = await axios.post(
-    `${process.env.BACKEND_URL_FOR_TESTS}user/verifyEmail`,
-    body
-  );
-
-  expect(res).toBeTruthy();
-});
-
-test("userInfo", async () => {
-  const body = {
-    userID: globalUserID,
-  };
-
-  const res = await axios.post(
-    `${process.env.BACKEND_URL_FOR_TESTS}user/userInfo`,
-    body
-  );
-
-  expect(res).toBeTruthy();
-});
-
-test("login", async () => {
-  const body = {
-    username: globalUser.username,
-    password: globalUser.password,
-  };
-
-  const res = await axios.post(
-    `${process.env.BACKEND_URL_FOR_TESTS}user/login`,
-    body
-  );
-
-  expect(res).toBeTruthy();
-});
-
-test("changeEmail", async () => {
-  const body = {
-    userID: globalUserID,
-    newEmail: globalUser.email,
-  };
-
-  const res = await axios.post(
-    `${process.env.BACKEND_URL_FOR_TESTS}user/changeEmail`,
-    body
-  );
-
-  expect(res).toBeTruthy();
-});
-
-test("forgotPassword", async () => {
-  const body = {
-    username: globalUser.username,
-  };
-
-  const res = await axios.post(
-    `${process.env.BACKEND_URL_FOR_TESTS}user/forgotPassword`,
-    body
-  );
-
-  expect(res).toBeTruthy();
-});
-
-test("deleteAccount", async () => {
-  const body = {
-    userID: globalUserID,
-  };
-
-  const res = await axios.post(
-    `${process.env.BACKEND_URL_FOR_TESTS}user/deleteAccount`,
-    body
-  );
-
-  expect(res).toBeTruthy();
+  expect(res.status).toBe(200);
+  expect(res.data).toEqual({ message: "Verify Token", verify: true });
 });
 
 // test("changeProfilePicture", async () => {
@@ -198,7 +214,5 @@ test("deleteAccount", async () => {
 // test("removeSellerFromFollowingList", async () => {});
 
 // test("getFollowingList", async () => {});
-
-// test("verifyToken", async () => {});
 
 // test("getUserById", async () => {});

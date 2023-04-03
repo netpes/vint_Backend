@@ -353,7 +353,7 @@ exports.changeEmail = (req: Request, res: Response) => {
 };
 
 /////////// (username)
-exports.forgotPassword = (req, res) => {
+exports.forgotPassword = (req: Request, res: Response) => {
   try {
     const { username } = req.body;
     User.findOne({ username: username }).then((user) => {
@@ -386,7 +386,7 @@ exports.forgotPassword = (req, res) => {
 };
 
 ////////// (userID)
-exports.deleteAccount = (req, res) => {
+exports.deleteAccount = (req: Request, res: Response) => {
   try {
     const { userID } = req.body;
 
@@ -404,6 +404,34 @@ exports.deleteAccount = (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Error - Delete Account", err: error });
+  }
+};
+
+//////////// (token, userID)//////
+exports.verifyToken = async (req: Request, res: Response) => {
+  try {
+    console.log("verifyToken");
+
+    const user = await User.findById(req.body.userID);
+    if (!user) {
+      return res.status(400).json({ message: "User not found", verify: false });
+    }
+
+    try {
+      const decoded = await jsonwebtoken.verify(
+        req.body.token,
+        process.env.JWT_TOKEN
+      );
+      return res.status(200).json({ message: "Verify Token", verify: true });
+    } catch (err) {
+      console.log("this is err", err);
+      return res.status(200).json({ message: "Unverify Token", verify: false });
+    }
+  } catch (err) {
+    console.log("this is err", err);
+    res
+      .status(500)
+      .json({ message: "Error - verifyToken", err: err, verify: false });
   }
 };
 

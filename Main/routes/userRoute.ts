@@ -13,6 +13,7 @@ const {
   forgotPassword,
   sendVerifyEmailAgain,
   userInfo,
+  verifyToken
 } = require("../controllers/userController");
 
 router.post("/signUp", signUp);
@@ -31,7 +32,7 @@ router.post("/userinfo", userInfo);
 //   changeProfilePicture
 // );
 
-// router.post("/verifyToken", verifyToken);
+router.post("/verifyToken", verifyToken);
 
 // router.post("/getWishList", getWishList);
 // router.post("/removeFromWishList", removeFromWishList);
