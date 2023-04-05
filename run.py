@@ -1,8 +1,9 @@
 import subprocess
 
 
-class run():
+class Run:
     # you can run me by writing: py run.py
+    # or if you're using mac: python run.py
     install = "npm install"
     start = "npm start"
 
@@ -48,4 +49,4 @@ class run():
                 print("Invalid input, please enter 'y' or 'n'")
 
 
-run()
+Run()
