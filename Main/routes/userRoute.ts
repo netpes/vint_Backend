@@ -13,7 +13,19 @@ const {
   forgotPassword,
   sendVerifyEmailAgain,
   userInfo,
-  verifyToken
+  verifyToken,
+  getUserById,
+  getFollowingList,
+  addSellerToFollowingList,
+  removeSellerFromFollowingList,
+
+  getWishList,
+  removeFromWishList,
+  addToWishList,
+
+  getUserProductsList,
+  addProductToUserProductsList,
+  removeProductFromUserProductsList,
 } = require("../controllers/userController");
 
 router.post("/signUp", signUp);
@@ -26,28 +38,28 @@ router.post("/forgotPassword", forgotPassword);
 router.post("/sendVerifyEmailAgain", sendVerifyEmailAgain);
 router.post("/userinfo", userInfo);
 
+router.post("/verifyToken", verifyToken);
 // router.post(
 //   "/changeProfilePicture",
 //   upload.single("file"),
 //   changeProfilePicture
 // );
 
-router.post("/verifyToken", verifyToken);
+router.post("/getUserById", getUserById);
 
-// router.post("/getWishList", getWishList);
-// router.post("/removeFromWishList", removeFromWishList);
-// router.post("/addToWishList", addToWishList);
+router.post("/getFollowingList", getFollowingList);
+router.post("/addSellerToFollowingList", addSellerToFollowingList);
+router.post("/removeSellerFromFollowingList", removeSellerFromFollowingList);
 
-// router.post("/addSellerToFollowingList", addSellerToFollowingList);
-// router.post("/getFollowingList", getFollowingList);
-// router.post("/removeSellerFromFollowingList", removeSellerFromFollowingList);
+router.post("/getUserProductsList", getUserProductsList);
+router.post("/addProductToUserProductsList", addProductToUserProductsList);
+router.post(
+  "/removeProductFromUserProductsList",
+  removeProductFromUserProductsList
+);
 
-// router.post(
-//   "/removeProductFromUserProductsList",
-//   removeProductFromUserProductsList
-// );
-// router.post("/getUserProductsList", getUserProductsList);
-// router.post("/addProductToUserProductsList", addProductToUserProductsList);
-// router.post("/getUserById", getUserById);
+router.post("/getWishList", getWishList);
+router.post("/addToWishList", addToWishList);
+router.post("/removeFromWishList", removeFromWishList);
 
 module.exports = router;

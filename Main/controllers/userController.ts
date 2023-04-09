@@ -435,8 +435,293 @@ exports.verifyToken = async (req: Request, res: Response) => {
   }
 };
 
-////// (userID, newPassword)
+//////////////////// (userID) ///////////////
+exports.getUserById = (req: Request, res: Response) => {
+  try {
+    console.log("getUserById");
+
+    User.findById(req.body.userID).then((user) => {
+      if (!user) res.status(400).json({ message: "User Not Found" });
+      else {
+        res.status(200).json({ message: "User Found", user });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error - getUserById", error });
+  }
+};
+
+// (userID, newPassword)
 exports.changePassword = changePassword;
 
-/////// (userID, email)
+// / (userID, email)
 exports.sendVerifyEmailAgain = sendVerifyEmailAgain;
+
+//////////// Following List //////////////////////////////////////////////////////////////////
+// (userID)
+exports.getFollowingList = (req: Request, res: Response) => {
+  try {
+    console.log("getFollowingList");
+
+    User.findById(req.body.userID).then((user) => {
+      if (!user) res.status(400).json({ message: "User not found" });
+      else {
+        user?.populate("following").then((populateUser) => {
+          res.status(200).json({
+            message: "following list",
+            following: populateUser.following,
+          });
+        });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error - getFollowingList", err: error });
+  }
+};
+
+// (userID, newFollowingID)
+exports.addSellerToFollowingList = (req: Request, res: Response) => {
+  try {
+    console.log("addSellerToFollowingList");
+
+    User.findById(req.body.userID).then((user) => {
+      if (!user) res.status(400).json({ message: "User not found" });
+      else {
+        if (user.following.includes(req.body.newFollowingID)) {
+          res200(res, { message: "User Already In FollowingList" });
+        } else {
+          const tempArray = [...user.following];
+          tempArray.push(req.body.newFollowingID);
+          User.findByIdAndUpdate(req.body.userID, {
+            following: tempArray,
+          }).then((updateUser) => {
+            res200(res, { message: "updated", user: updateUser });
+          });
+        }
+      }
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error - addSellerToFollowingList", err: error });
+  }
+};
+
+/// (userID, idToRemove)
+exports.removeSellerFromFollowingList = (req: Request, res: Response) => {
+  try {
+    console.log("removeSellerFromFollowingList");
+
+    User.findById(req.body.userID).then((user) => {
+      if (!user) res.status(400).json({ message: "User not found" });
+      else {
+        if (!user.following.includes(req.body.idToRemove)) {
+          res.status(400).json({ message: "The userID Is Not Listed" });
+        } else {
+          User.findByIdAndUpdate(req.body.userID, {
+            following: [
+              ...user.following.filter(
+                (item) => item.toString() != req.body.idToRemove
+              ),
+            ],
+          }).then((updateUser) => {
+            res200(res, { message: "Following Removed" });
+          });
+        }
+      }
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error - removeSellerFromFollowingList", err: error });
+  }
+};
+
+//////////// userProducts //////////////////////////////////////////////////////////////////
+//(userID)
+exports.getUserProductsList = (req: Request, res: Response) => {
+  try {
+    console.log("getUserProductsList");
+
+    User.findById(req.body.userID).then((user) => {
+      if (!user) res.status(400).json({ message: "User not found" });
+      else {
+        user.populate("userProducts").then((populateUser) => {
+          res.status(200).json({
+            message: "user Products",
+            userProducts: populateUser.userProducts,
+          });
+        });
+      }
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error - getUserProductsList", err: error });
+  }
+};
+
+/// (userID, productID)
+exports.addProductToUserProductsList = (req: Request, res: Response) => {
+  try {
+    console.log("addProductToUserProductsList");
+
+    User.findById(req.body.userID).then((user) => {
+      if (!user) res.status(400).json({ message: "User not found" });
+      else {
+        if (user.userProducts.includes(req.body.productID)) {
+          res200(res, { message: "Product Already In userProducts" });
+        } else {
+          const tempArray = [...user.userProducts];
+          tempArray.push(req.body.productID);
+          User.findByIdAndUpdate(req.body.userID, {
+            userProducts: tempArray,
+          }).then((updateUser) => {
+            res200(res, { message: "updated", user: updateUser });
+          });
+        }
+      }
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error - addProductToUserProductsList", err: error });
+  }
+};
+
+/// (userID, productIDToRemove)
+exports.removeProductFromUserProductsList = (req: Request, res: Response) => {
+  try {
+    console.log("removeProductFromUserProductsList");
+
+    User.findById(req.body.userID).then((user) => {
+      if (!user) res.status(400).json({ message: "User not found" });
+      else {
+        if (!user.userProducts.includes(req.body.productIDToRemove)) {
+          res.status(400).json({ message: "The productID Is Not Listed" });
+        } else {
+          User.findByIdAndUpdate(req.body.userID, {
+            userProducts: [
+              ...user.userProducts.filter(
+                (item) => item.toString() != req.body.productIDToRemove
+              ),
+            ],
+          }).then((updateUser) => {
+            res200(res, { message: "Product Removed" });
+          });
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error - removeProductFromUserProductsList",
+      err: error,
+    });
+  }
+};
+
+////////// wish list //////////////////////////////////////////////////////////////////
+
+// (userID)
+exports.getWishList = (req: Request, res: Response) => {
+  try {
+    console.log("getWishList");
+
+    User.findById(req.body.userID).then((user) => {
+      if (!user) res.status(400).json({ message: "User not found" });
+      else {
+        user.populate("WishList").then((populateUser) => {
+          res.status(200).json({
+            message: "wish list",
+            countOFItems: user.WishList.length,
+            WishList: populateUser.WishList,
+          });
+        });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error - getWishList", err: error });
+  }
+};
+
+/// (userID, productID)
+exports.addToWishList = (req: Request, res: Response) => {
+  try {
+    console.log("addToWishList");
+
+    User.findById(req.body.userID).then((user) => {
+      if (!user) res.status(400).json({ message: "User not found" });
+      else {
+        if (user.WishList.includes(req.body.productID)) {
+          res200(res, { message: "Product Already In WishList" });
+        } else {
+          const tempArray = [...user.WishList];
+          tempArray.push(req.body.productID);
+          User.findByIdAndUpdate(req.body.userID, {
+            WishList: tempArray,
+          }).then((updateUser) => {
+            res200(res, { message: "updated", user: updateUser });
+          });
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error - addToWishList", err: error });
+  }
+};
+
+/// (userID, productIDToRemove)
+exports.removeFromWishList = (req: Request, res: Response) => {
+  try {
+    console.log("removeFromWishList");
+
+    User.findById(req.body.userID).then((user) => {
+      if (!user) res.status(400).json({ message: "User not found" });
+      else {
+        if (!user.WishList.includes(req.body.productIDToRemove)) {
+          res.status(400).json({ message: "The productID Is Not Listed" });
+        } else {
+          User.findByIdAndUpdate(req.body.userID, {
+            WishList: [
+              ...user.WishList.filter(
+                (item) => item.toString() != req.body.productIDToRemove
+              ),
+            ],
+          }).then((updateUser) => {
+            res200(res, { message: "Product Removed" });
+          });
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error - removeFromWishList", err: error });
+  }
+};
+
+////////////// (userID,  image = (size,mimetype,data,typeImageOrVideo))
+// exports.changeProfilePicture = async (req: Request, res: Response) => {
+//   try {
+//     const {size, mimetype, data, typeImageOrVideo} = req.file;
+
+//     const {userID} = req.body;
+
+//     const pic_URL = await cloudinaryUpload({
+//       size,
+//       mimetype,
+//       data,
+//       typeImageOrVideo,
+//     });
+
+//     User.findByIdAndUpdate(userID, {profilePicture: pic_URL}).then((user) => {
+//       if (!user) res.status(404).json({message: "Can't Find User"});
+//       else {
+//         res.status(200).json({
+//           message: "Update Successfuly - Profile Picture",
+//           URL: pic_URL,
+//         });
+//       }
+//     });
+//   } catch (error) {
+//     res.status(500).json({message: "Error - changeProfilePicture", err: error});
+//   }
+// };
