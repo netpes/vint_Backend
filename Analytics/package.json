@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/netpes/vint_Backend#readme",
   "devDependencies": {
+    "@types/express": "^4.17.17",
     "@types/mongoose": "^5.11.97",
     "jest": "^29.5.0",
     "ts-jest": "^29.0.5",

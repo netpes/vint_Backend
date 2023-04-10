@@ -1,18 +1,19 @@
-const express = require("express");
+import express from "express";
+
 const router = express.Router();
 
 const {
-  // GetFeed,
-  // Search,
-  // GetFollowingFeed,
-  // AddAnalytics,
-  // MyTown
+  GetFeed,
+  Search,
+  GetFollowingFeed,
+  AddAnalytics,
+  MyTown,
 } = require("../controllers/analyticsController");
 
 // router.post("/getfeed", GetFeed);
-// router.post("/analytics", AddAnalytics);
+router.post("/addAnalytics", AddAnalytics);
 // router.post("/search", Search);
 // router.post("/getfollowingfeed", GetFollowingFeed);
-// router.post("/mytown", MyTown)
+// router.post("/mytown", MyTown);
 
 module.exports = router;

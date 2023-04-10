@@ -6,7 +6,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const PORT = 5050 || process.env.PORT;
 //routes
-// const analyticsRouter = require("./routes/analytics");
+const analyticsRouter = require("./routes/analyticsRoute");
 
 // .env file
 require("dotenv").config();
@@ -25,6 +25,6 @@ app.use(express.json());
 app.use(cors());
 
 // routes define
-// app.use("/", analyticsRouter);
+app.use("/", analyticsRouter);
 
 app.listen(PORT, () => console.log("connected: " + PORT));

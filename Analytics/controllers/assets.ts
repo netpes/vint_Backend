@@ -1,6 +1,6 @@
-const Analytics = require("../models/Analytics");
-const Products = require("../models/Product");
-const User = require("../models/User");
+const User = require("../models/userModel");
+const Products = require("../models/productModel");
+const Analytics = require("../models/analyticsModel");
 const GetTag = (tag) => {
   return tag.tag;
 };
@@ -182,6 +182,7 @@ module.exports = {
                     }
                   });
                 });
+
                 function getTheSum(sellerArray) {
                   let sum = 0;
                   sellerArray.forEach((tag) => {
@@ -189,6 +190,7 @@ module.exports = {
                   });
                   return sum;
                 }
+
                 sellerSuggestions.push({
                   seller: user._id,
                   score: getTheSum(singleSellerArray),

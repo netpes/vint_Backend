@@ -2,7 +2,7 @@
   "name": "vint_main_backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.ts",
   "scripts": {
     "test": "jest",
     "dev": "nodemon server.ts",
