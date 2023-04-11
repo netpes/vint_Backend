@@ -8,13 +8,13 @@ const analytics_schema = new mongoose.Schema({
   },
   clicks: [
     {
-      tag: { type: Number, default: 0 },
+      tag: { type: String, default: 0 },
       score: { type: Number, default: 0 },
     },
   ],
   observer: [
     {
-      tag: { type: Number, default: 0 },
+      tag: { type: String, default: 0 },
       score: { type: Number, default: 0 },
     },
   ],

@@ -4,7 +4,7 @@ import axios from "axios";
 describe("add analytics", () => {
   test("add analytics", async () => {
     const body = {
-      userId: "6412b56a782e9380f0d415fc",
+      user_id: "6412b596ded730d91035bac1",
       productsArr: [
         {
           productId: "6412d17f0c5fc72471c6c6d8",

@@ -8,11 +8,14 @@ const GetScore = (tag) => {
   return tag.score;
 };
 const Local_GetProductTags = (productId) => {
-  return Products.findOne({ _id: productId }).then((product) => {
+  Products.findOne({ _id: productId }).then((product) => {
     if (product) {
       return product?.tags;
+    } else {
+      return [];
     }
   });
+  return [];
 };
 module.exports = {
   GetSeen: (user_id) => {
@@ -25,33 +28,62 @@ module.exports = {
     });
   },
   AddSeen: (user_id, seen) => {
-    const divider = 3;
-    Analytics.findOne({ user_id: user_id }).then((analytics) => {
-      if (analytics) {
-        const seenLength = analytics?.seen.length;
-        const unseenLength = analytics?.unseen.length;
-        try {
-          analytics?.seen.unshift(seen);
-          analytics?.markModified("seen");
-          analytics?.save();
-          if (seenLength >= unseenLength / divider) {
-            const oldest_seen = analytics?.seen.slice(-(seenLength / divider));
-            analytics?.unseen.push(oldest_seen);
-            analytics.seen = analytics?.seen.slice(
-              seenLength - seenLength / divider
-            );
+    const divider = 1;
+    let cases = 0;
+    console.log("this is seen " + seen);
+    console.log(user_id);
+    try {
+      Analytics.findOne({ user_id: user_id }).then((analytics) => {
+        if (analytics) {
+          // Make any necessary modifications to the document
+          const seenLength = analytics?.seen.length;
+          const unseenLength = analytics?.unseen.length;
+          console.log(
+            "seen length " + seenLength + "unseen length " + unseenLength
+          );
+          try {
+            const new_seen = [...analytics?.seen, ...seen];
 
-            analytics?.markModified("unseen");
-            analytics?.markModified("seen");
-            analytics?.save();
+            // analytics?.markModified("seen");
+            if (unseenLength > 0) {
+              if (seenLength >= unseenLength / divider) {
+                cases = 1;
+                const oldest_seen = new_seen.slice(-(seenLength / divider));
+                analytics?.unseen.push(...oldest_seen);
+                analytics.seen = new_seen.slice(
+                  seenLength - seenLength / divider
+                );
+                analytics?.markModified("unseen");
+                analytics?.markModified("seen");
+                console.log(analytics.seen, analytics.unseen);
+              } else {
+                cases = 2;
+                analytics?.seen.unshift(seen);
+                console.log(analytics.seen);
+                analytics?.markModified("seen");
+              }
+            } else {
+              cases = 3;
+              analytics.unseen = [...new_seen];
+              analytics.seen = [];
+              analytics?.markModified("unseen");
+              analytics?.markModified("seen");
+            }
+            console.log("case " + cases);
+            // Reload the document from the database
+            Analytics.findByIdAndUpdate(analytics._id, analytics)
+              .then(() => {})
+              .catch((err) => {
+                console.log(err);
+              });
+          } catch (err) {
+            console.log(err);
           }
-          return true;
-        } catch (err) {
-          console.log(err);
-          return false;
         }
-      }
-    });
+      });
+    } catch (err) {
+      console.log(err);
+    }
   },
   GetProductTags: (productId) => {
     return Products.findOne({ _id: productId }).then((product) => {
@@ -60,7 +92,7 @@ module.exports = {
       }
     });
   },
-  CalcSummary: (user_id, clicks, observers, liked) => {
+  CalcSummary: async (user_id, clicks, observers, liked) => {
     let likedtags = [];
     liked.map((likedProduct) => {
       likedtags.push(...Local_GetProductTags(likedProduct));
@@ -101,11 +133,13 @@ module.exports = {
         });
       }
     });
-    Analytics.findOne({ user_id: user_id }).then((analytics) => {
+    await Analytics.findOne({ user_id: user_id }).then((analytics) => {
       analytics.sum = sum;
 
-      analytics?.sum?.sort(GetScore);
-      Analytics?.save();
+      analytics?.sum?.sort((a, b) => {
+        return b.score - a.score;
+      });
+      analytics?.save();
     });
   },
 
@@ -118,22 +152,25 @@ module.exports = {
   },
   SortByTags: (user_id, products) => {
     const Answer = [];
-    // Analytics.findOne({ user_id: user_id }).then((analytics) => {
-    //   products.map((product) => {
-    //     let matchRank = 0;
-    //     analytics?.sum.map((tag) => {
-    //       if (product.tags?.includes(GetTag(tag))) {
-    //         matchRank = matchRank + tag.score;
-    //       }
-    //     });
-    //     Answer.push({ product, score: matchRank });
-    //   });
-    //   // Answer.sort(GetScore);
-    //   analytics.unseen = Answer.sort(GetScore);
-    //   analytics?.save();
-    // });
-    // return Answer.sort(GetScore);
-    return products;
+    Analytics.findOne({ user_id: user_id }).then((analytics) => {
+      products.map((product) => {
+        let matchRank = 0;
+        analytics?.sum.map((tag) => {
+          if (product.tags?.includes(GetTag(tag))) {
+            matchRank = matchRank + tag.score;
+          }
+        });
+        Answer.push({ product, score: matchRank });
+      });
+      // Answer.sort(GetScore);
+      analytics.unseen = Answer.sort((a, b) => {
+        return b.score - a.score;
+      });
+      analytics?.save();
+    });
+    return Answer.sort((a, b) => {
+      return b.score - a.score;
+    });
   },
   // seller preferences is the sum of the following sellers publishedProductsSum
   SumSellers: (user_id) => {
