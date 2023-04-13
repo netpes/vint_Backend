@@ -330,6 +330,7 @@ module.exports = {
                   console.log("this is clicks ", clicks);
                   clicks = userAnalytics.clicks.map((exist_tag: tagobj) => {
                     debugger;
+                    // bug!
                     if (tag == exist_tag.tag) {
                       check = true;
                       console.log("increase click count of ", exist_tag);
