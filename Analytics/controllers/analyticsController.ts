@@ -13,74 +13,38 @@ const {
   GetScore,
   sortAndRemoveDuplicate,
   GetTag,
+  SortAnalytics,
   SumSellers,
   GetProductViaIds,
 } = require("./assets");
 import { Request, Response } from "express";
-import { AnalyticsType, ProductType } from "./types";
+import { AnalyticsType, ProductType, tagarray, tagobj } from "./types";
 
 module.exports = {
   // {user_id, productsArr: [{productId, liked:bool, observed, clicks: bool}]}
-  AddAnalytics: (req: Request, res: Response) => {
+  AddAnalytics: async (req: Request, res: Response) => {
     const { user_id, productsArr } = req.body;
     const productIds = productsArr.map((p) => p.productId);
+
     console.log(productIds);
-    Analytics.findOne({ user_id: user_id }).then((userAnalytics: any) => {
-      console.log("this is analytics " + userAnalytics);
-      productsArr.map((product: any) => {
-        let tags = product.tags;
-        if (product.liked) {
-          userAnalytics?.liked.push(product.productId);
-        }
-        if (product.click) {
-          tags?.map((tag: any) => {
-            let check = false;
-            userAnalytics?.clicks.map((exist_tag: any) => {
-              if (tag === exist_tag.tag) {
-                check = true;
-                exist_tag.score += 1;
-              }
-            });
-            if (check) {
-              userAnalytics?.clicks.push({ tag: tag, score: 1 });
-            }
-          });
-        }
-        if (product.observer > 0) {
-          tags.map((tag: any) => {
-            let check = false;
-            userAnalytics?.observer.map((exist_tag: any) => {
-              if (tag === exist_tag.tag) {
-                check = true;
-                exist_tag.score += 1;
-              }
-            });
-            if (check) {
-              userAnalytics?.observer.push({ tag: tag, score: 1 });
-            }
-          });
-        }
-      });
-      try {
-        // @ts-ignore
-        userAnalytics.save().then((rs) => {
-          console.log("this is saved analytics" + rs);
-          CalcSummary(
-            user_id,
-            userAnalytics?.clicks,
-            userAnalytics?.observer,
-            userAnalytics?.liked
-          ).then(async () => {
-            await AddSeen(user_id, productIds);
-            await res.json({ success: true });
-            await console.log(true);
-          });
-        });
-      } catch (e) {
-        console.log(e);
-        res.send(false);
-      }
-    });
+    try {
+      debugger;
+      const analytics = await SortAnalytics(user_id, productsArr);
+      debugger;
+      await CalcSummary(
+        user_id,
+        analytics?.clicks,
+        analytics?.observer,
+        analytics?.liked
+      );
+      debugger;
+      await AddSeen(user_id, productIds);
+      debugger;
+      res.json({ success: true });
+      console.log(true);
+    } catch (err) {
+      console.log(err);
+    }
   },
   Search: async (req: Request, res: Response) => {
     try {

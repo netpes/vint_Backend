@@ -6,6 +6,10 @@ export type tagarray = [
     score: number;
   }
 ];
+export type tagobj = {
+  tag: string;
+  score: number;
+};
 export type AnalyticsType = {
   user_id: string;
   clicks: tagarray;

@@ -1,3 +1,5 @@
+import { tagobj } from "./types";
+
 const User = require("../models/userModel");
 const Products = require("../models/productModel");
 const Analytics = require("../models/analyticsModel");
@@ -7,15 +9,14 @@ const GetTag = (tag) => {
 const GetScore = (tag) => {
   return tag.score;
 };
-const Local_GetProductTags = (productId) => {
-  Products.findOne({ _id: productId }).then((product) => {
-    if (product) {
-      return product?.tags;
-    } else {
-      return [];
-    }
-  });
-  return [];
+const Local_GetProductTags = async (productId) => {
+  if (productId) {
+    const product = await Products.findOne({ _id: productId });
+    console.log("this is product tags function , ", product.tags);
+    return product.tags;
+  } else {
+    return [];
+  }
 };
 module.exports = {
   GetSeen: (user_id) => {
@@ -38,9 +39,9 @@ module.exports = {
           // Make any necessary modifications to the document
           const seenLength = analytics?.seen.length;
           const unseenLength = analytics?.unseen.length;
-          console.log(
-            "seen length " + seenLength + "unseen length " + unseenLength
-          );
+          // console.log(
+          //   "seen length " + seenLength + "unseen length " + unseenLength
+          // );
           try {
             const new_seen = [...analytics?.seen, ...seen];
 
@@ -85,17 +86,28 @@ module.exports = {
       console.log(err);
     }
   },
-  GetProductTags: (productId) => {
-    return Products.findOne({ _id: productId }).then((product) => {
-      if (product) {
-        return product?.tags;
-      }
-    });
+  GetProductTags: async (productId) => {
+    if (productId) {
+      const product = await Products.findOne({ _id: productId });
+      console.log("this is product tags function , ", product.tags);
+      return product.tags;
+    } else {
+      return [];
+    }
   },
   CalcSummary: async (user_id, clicks, observers, liked) => {
+    console.log(
+      "this is clicks ",
+      clicks,
+      "this is observers ",
+      observers,
+      "this is liked ",
+      liked
+    );
     let likedtags = [];
-    liked.map((likedProduct) => {
-      likedtags.push(...Local_GetProductTags(likedProduct));
+    liked.map(async (likedProduct) => {
+      const tags = await Local_GetProductTags(likedProduct);
+      likedtags.push(...tags);
     });
 
     const toClicks = observers.map((observer) => {
@@ -109,6 +121,7 @@ module.exports = {
           check = true;
         }
       });
+      console.log("liked tags: ", likedtags);
       likedtags.map((likeToClick) => {
         if (likeToClick === click.tag) {
           //for each like click add 10 scores
@@ -134,6 +147,7 @@ module.exports = {
       }
     });
     await Analytics.findOne({ user_id: user_id }).then((analytics) => {
+      console.log("this is summary ", sum);
       analytics.sum = sum;
 
       analytics?.sum?.sort((a, b) => {
@@ -284,5 +298,88 @@ module.exports = {
     Products.find({ _id: { $in: productsArr } }).then((products) => {
       return products;
     });
+  },
+  SortAnalytics: async (user_id, productsArr) => {
+    try {
+      let done = false;
+      return Analytics.findOne({ user_id: user_id }).then(
+        async (userAnalytics: any) => {
+          // console.log("this is analytics " + userAnalytics);
+          let clicks: any = userAnalytics.clicks;
+          console.log(userAnalytics.clicks);
+          console.log(productsArr);
+          debugger;
+          productsArr.map(async (product: any) => {
+            let tags = await Local_GetProductTags(product.productId);
+            debugger;
+            console.log("tags arrived, :", tags);
+            if (product.liked) {
+              debugger;
+              userAnalytics?.liked.push(product.productId);
+            }
+            if (product.clicks) {
+              // console.log("this is tags ", tags);
+              tags.map((tag: string) => {
+                debugger;
+                console.log(tag);
+                let check = false;
+                if (
+                  (clicks && userAnalytics.clicks.length > 0) ||
+                  clicks.length > 0
+                ) {
+                  console.log("this is clicks ", clicks);
+                  clicks = userAnalytics.clicks.map((exist_tag: tagobj) => {
+                    debugger;
+                    if (tag == exist_tag.tag) {
+                      check = true;
+                      console.log("increase click count of ", exist_tag);
+                      exist_tag.score++;
+                    }
+                  });
+                }
+                if (!check) {
+                  debugger;
+                  console.log("pushing ", tag);
+                  clicks.push({ tag: tag.toString(), score: 1 });
+                }
+              });
+            }
+            if (product.observer > 0) {
+              tags.map((tag: any) => {
+                let check = false;
+                userAnalytics?.observer.map((exist_tag: any) => {
+                  if (tag == exist_tag.tag) {
+                    check = true;
+                    return (exist_tag.score += 1);
+                  }
+                });
+                if (!check) {
+                  userAnalytics?.observer.push({ tag: tag, score: 1 });
+                }
+              });
+            }
+            userAnalytics.clicks = clicks;
+            console.log("this is clicks final  " + clicks);
+            userAnalytics.save();
+            done = true;
+            debugger;
+          });
+          debugger;
+          if (done) {
+            return async function returnAnswer() {
+              // the problem: the function returns before the async function executed
+              debugger;
+              return {
+                clicks: userAnalytics.clicks,
+                observer: userAnalytics.observer,
+                liked: userAnalytics.liked,
+              };
+            };
+          }
+        }
+      );
+    } catch (err) {
+      console.log(err);
+    }
   },
 };
