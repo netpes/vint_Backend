@@ -28,19 +28,24 @@ module.exports = {
 
     console.log(productIds);
     try {
-      debugger;
-      const analytics = await SortAnalytics(user_id, productsArr);
-      debugger;
-      await CalcSummary(
-        user_id,
-        analytics?.clicks,
-        analytics?.observer,
-        analytics?.liked
-      );
-      debugger;
-      await AddSeen(user_id, productIds);
-      debugger;
-      res.json({ success: true });
+      await AddSeen(user_id, productIds); // add to seen -- tested works!
+      SortAnalytics(user_id, productsArr)
+        .then((analytics) => {
+          // Ensure that analytics data is available before calling CalcSummary()
+          CalcSummary(
+            user_id,
+            Object.values(analytics?.clicks),
+            Object.values(analytics?.observer),
+            analytics?.liked
+          ).then((result) => {
+            console.log(result);
+          });
+          res.json({ success: true });
+        })
+        .catch((error) => {
+          console.log(error);
+          res.json({ success: false, error });
+        });
       console.log(true);
     } catch (err) {
       console.log(err);

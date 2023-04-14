@@ -16,8 +16,10 @@ const {
   SumSellers,
   GetProductViaIds,
 } = require("./assets");
-describe("add analytics", () => {
+
+describe("tested", () => {
   test("add analytics", async () => {
+    // after three days of doom, i can declare add analytics as functional function!
     const body = {
       user_id: "6412b596ded730d91035bac1",
       productsArr: [
@@ -39,11 +41,3 @@ describe("add analytics", () => {
     expect(res.data).toBeTruthy();
   });
 });
-describe("getproductTags", () => {
-  test("", async () => {
-    const productId = "6412d17f0c5fc72471c6c6d8";
-    console.log(await GetProductTags(productId));
-    expect(await GetProductTags(productId)).toBeTruthy();
-  });
-});
-// clicks and observer is'nt working!

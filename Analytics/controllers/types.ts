@@ -4,6 +4,7 @@ export type tagarray = [
   {
     tag: string;
     score: number;
+    _id?: string;
   }
 ];
 export type tagobj = {
