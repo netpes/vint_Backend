@@ -55,35 +55,43 @@ module.exports = {
     try {
       const { user_id, input } = req.body;
       const Answer: any[] = [];
-      let highMatchProducts;
-      let lowMatchProducts;
-      Products.find().then((products: any) => {
-        //filter high match products:
-        highMatchProducts = products.filter((product: any) => {
-          return (
-            product.name.toLowerCase().includes(input.toLowerCase()) ||
-            product.category.toLowerCase().includes(input.toLowerCase())
-          );
-        });
-        if (highMatchProducts.length > 0) {
-          Answer.push(...SortByTags(user_id, highMatchProducts));
-        }
-        //filter low match products:
-        const lowMatchProducts = products.filter((product: any) => {
-          return product.tags.filter((tag: any) => {
-            return input.toLowerCase().includes(tag.toLowerCase());
-          });
-        });
-        if (lowMatchProducts.length > 0) {
-          Answer.push(...SortByTags(user_id, lowMatchProducts));
-        }
-        if (Answer.length === 0) {
-          res.json("no products found");
-        }
-        res.json(Array.from(new Set(Answer)));
+      const products = await Products.find();
+      debugger;
+      console.log("this is products", products);
+      // filter high match products:
+      const highMatchProducts = products.filter((product: any) => {
+        return (
+          product.name.toLowerCase().includes(input.toLowerCase()) ||
+          product.category.toLowerCase().includes(input.toLowerCase())
+        );
       });
+
+      if (highMatchProducts.length > 0) {
+        const sorted = await SortByTags(user_id, highMatchProducts);
+        Answer.push(...sorted);
+      }
+
+      // filter low match products:
+      const lowMatchProducts = products.filter((product: any) => {
+        return product.tags.some((tag: any) => {
+          return input.toLowerCase().includes(tag.toLowerCase());
+        });
+      });
+
+      if (lowMatchProducts.length > 0) {
+        const sorted = await SortByTags(user_id, lowMatchProducts);
+        Answer.push(...sorted);
+      }
+
+      if (Answer.length === 0) {
+        return res.json("no products found");
+      }
+
+      const uniqueAnswer = Array.from(new Set(Answer));
+      return res.json({ answer: uniqueAnswer });
     } catch (e) {
       console.log(e);
+      return res.json({ error: e });
     }
   },
   GetFollowingFeed: async (req: Request, res: Response) => {

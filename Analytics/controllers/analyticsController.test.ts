@@ -41,3 +41,14 @@ describe("tested", () => {
     expect(res.data).toBeTruthy();
   });
 });
+describe("not tested", () => {
+  test("search with analytics", async () => {
+    const body = {
+      user_id: "6412b596ded730d91035bac1",
+      input: "shirt",
+    };
+    const res = await axios.post("http://localhost:5050/search", body);
+    console.log(res.data);
+    expect(res.data).toBeTruthy();
+  });
+});

@@ -26,10 +26,26 @@ const analytics_schema = new mongoose.Schema({
     },
   ],
   seen: [
-    { type: mongoose.Schema.Types.ObjectId, ref: "products", required: false }, //check if i insert products ids !
+    {
+      productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "products",
+        required: false,
+      },
+      score: { type: Number, default: 0, required: false },
+      //check if i insert products ids !
+    },
   ],
   unseen: [
-    { type: mongoose.Schema.Types.ObjectId, ref: "products", required: false },
+    {
+      productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "products",
+        required: false,
+      },
+      score: { type: Number, default: 0, required: false },
+      //check if i insert products ids !
+    },
   ],
   sellerPreferences: [
     {

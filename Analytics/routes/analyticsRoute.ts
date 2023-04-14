@@ -12,7 +12,7 @@ const {
 
 // router.post("/getfeed", GetFeed);
 router.post("/addAnalytics", AddAnalytics);
-// router.post("/search", Search);
+router.post("/search", Search);
 // router.post("/getfollowingfeed", GetFollowingFeed);
 // router.post("/mytown", MyTown);
 

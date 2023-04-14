@@ -1,4 +1,5 @@
 import { tagobj } from "./types";
+import { describe } from "@jest/globals";
 
 const User = require("../models/userModel");
 const Products = require("../models/productModel");
@@ -177,27 +178,27 @@ module.exports = {
     });
     return products;
   },
-  SortByTags: (user_id, products) => {
-    const Answer = [];
-    Analytics.findOne({ user_id: user_id }).then((analytics) => {
-      products.map((product) => {
-        let matchRank = 0;
-        analytics?.sum.map((tag) => {
-          if (product.tags?.includes(GetTag(tag))) {
-            matchRank = matchRank + tag.score;
-          }
-        });
-        Answer.push({ product, score: matchRank });
+  // need to test!
+  SortByTags: async (user_id, products) => {
+    let analytics = await Analytics.findOne({ user_id: user_id });
+    const answer = [];
+
+    products.forEach((product) => {
+      let matchRank = 0;
+      analytics?.sum.forEach((tag) => {
+        if (product.tags?.includes(tag.tag)) {
+          matchRank += tag.score;
+        }
       });
-      // Answer.sort(GetScore);
-      analytics.unseen = Answer.sort((a, b) => {
-        return b.score - a.score;
-      });
-      analytics?.save();
+      answer.push({ productId: product._id, score: matchRank });
     });
-    return Answer.sort((a, b) => {
-      return b.score - a.score;
-    });
+
+    answer.sort((a, b) => b.score - a.score);
+    // big probklem here, unseen rest everytime.
+    const newAnalytics = { ...analytics.toObject(), unseen: answer };
+    await Analytics.updateOne({ _id: analytics._id }, newAnalytics);
+
+    return answer;
   },
   // seller preferences is the sum of the following sellers publishedProductsSum
   SumSellers: (user_id) => {
