@@ -303,13 +303,10 @@ exports.login = (req: Request, res: Response) => {
           { id: user._id },
           process.env.JWT_TOKEN
         );
-        console.warn(typeof password);
 
         bcrypt
           .compare(password.toString(), user.password)
           .then((bcryptPassword) => {
-            console.error(bcryptPassword, 12345678);
-
             if (!bcryptPassword) {
               res.status(400).json({ message: "Password incorrect" });
             } else {

@@ -341,128 +341,282 @@ describe("User", () => {
     expect(res.statusCode >= 400).toBe(true);
   });
 
-  // test("getFollowingList", async () => {
-  //   const body = {
-  //     userID: globalUserID,
-  //   };
+  test("Add another user for following tests", async () => {
+    const body: typeUser = {
+      username: "2",
+      email: "vinttnrr2@gmail.com",
+      name: "user2",
+      password: "2",
+      phone: "0500000002",
+      _id: "222222222222222222222222",
+    };
 
-  //   const res = await axios.post(
-  //     `${process.env.BACKEND_URL_FOR_TESTS}user/getFollowingList`,
-  //     body
-  //   );
+    const res = await request.post("/user/signUp").send(body);
 
-  //   expect(res.status).toBe(200);
-  // });
+    expect(res.statusCode).toBe(200);
+  });
 
-  // test("addSellerToFollowingList", async () => {
-  //   const body = {
-  //     userID: globalUserID,
-  //     newFollowingID: "6412b66799d3a23e507dcdd0",
-  //   };
+  test("getFollowingList good status", async () => {
+    const body = {
+      userID: globalUser._id,
+    };
 
-  //   const res = await axios.post(
-  //     `${process.env.BACKEND_URL_FOR_TESTS}user/addSellerToFollowingList`,
-  //     body
-  //   );
+    const res = await request.post("/user/getFollowingList").send(body);
 
-  //   expect(res.status).toBe(200);
-  // });
+    expect(res.statusCode).toBe(200);
+  });
 
-  // test("removeSellerFromFollowingList", async () => {
-  //   const body = {
-  //     userID: globalUserID,
-  //     idToRemove: "6412b66799d3a23e507dcdd0",
-  //   };
+  test("getFollowingList bad status", async () => {
+    const body = {
+      userID: "",
+    };
 
-  //   const res = await axios.post(
-  //     `${process.env.BACKEND_URL_FOR_TESTS}user/removeSellerFromFollowingList`,
-  //     body
-  //   );
+    const res = await request.post("/user/getFollowingList").send(body);
 
-  //   expect(res.status).toBe(200);
-  // });
+    expect(res.statusCode >= 400).toBe(true);
+  });
 
-  // test("getUserProductsList", async () => {
-  //   const body = {
-  //     userID: globalUserID,
-  //   };
+  test("addSellerToFollowingList good status", async () => {
+    const body = {
+      userID: globalUser._id,
+      newFollowingID: "222222222222222222222222",
+    };
 
-  //   const res = await axios.post(
-  //     `${process.env.BACKEND_URL_FOR_TESTS}user/getUserProductsList`,
-  //     body
-  //   );
+    const res = await request.post("/user/addSellerToFollowingList").send(body);
 
-  //   expect(res.status).toBe(200);
-  // });
+    expect(res.statusCode).toBe(200);
+  });
 
-  // test("addProductToUserProductsList", async () => {
-  //   const body = {
-  //     userID: globalUserID,
-  //     productID: "6412c802a259648cb1fb64ed",
-  //   };
+  test("addSellerToFollowingList bad status", async () => {
+    const body = {
+      userID: "",
+      newFollowingID: "",
+    };
 
-  //   const res = await axios.post(
-  //     `${process.env.BACKEND_URL_FOR_TESTS}user/addProductToUserProductsList`,
-  //     body
-  //   );
+    const res = await request.post("/user/addSellerToFollowingList").send(body);
 
-  //   expect(res.status).toBe(200);
-  // });
+    expect(res.statusCode >= 400).toBe(true);
+  });
 
-  // test("removeProductFromUserProductsList", async () => {
-  //   const body = {
-  //     userID: globalUserID,
-  //     productIDToRemove: "6412b66799d3a23e507dcdd0",
-  //   };
+  test("removeSellerFromFollowingList good status", async () => {
+    const body = {
+      userID: globalUser._id,
+      idToRemove: "222222222222222222222222",
+    };
 
-  //   const res = await axios.post(
-  //     `${process.env.BACKEND_URL_FOR_TESTS}user/removeProductFromUserProductsList`,
-  //     body
-  //   );
+    const res = await request
+      .post("/user/removeSellerFromFollowingList")
+      .send(body);
 
-  //   expect(res.status).toBe(200);
-  // });
+    expect(res.statusCode).toBe(200);
+  });
 
-  // test("getWishList", async () => {
-  //   const body = {
-  //     userID: globalUserID,
-  //   };
+  test("removeSellerFromFollowingList bad status without userID", async () => {
+    const body = {
+      userID: "",
+      idToRemove: "222222222222222222222222",
+    };
 
-  //   const res = await axios.post(
-  //     `${process.env.BACKEND_URL_FOR_TESTS}user/getWishList`,
-  //     body
-  //   );
+    const res = await request
+      .post("/user/removeSellerFromFollowingList")
+      .send(body);
 
-  //   expect(res.status).toBe(200);
-  // });
+    expect(res.statusCode >= 400).toBe(true);
+  });
 
-  // test("addToWishList", async () => {
-  //   const body = {
-  //     userID: globalUserID,
-  //     productID: "6412c802a259648cb1fb64ed",
-  //   };
+  test("removeSellerFromFollowingList bad status without newFollowingID", async () => {
+    const body = {
+      userID: globalUser._id,
+      idToRemove: "",
+    };
 
-  //   const res = await axios.post(
-  //     `${process.env.BACKEND_URL_FOR_TESTS}user/addToWishList`,
-  //     body
-  //   );
+    const res = await request
+      .post("/user/removeSellerFromFollowingList")
+      .send(body);
 
-  //   expect(res.status).toBe(200);
-  // });
+    expect(res.statusCode >= 400).toBe(true);
+  });
 
-  // test("removeFromWishList", async () => {
-  //   const body = {
-  //     userID: globalUserID,
-  //     productIDToRemove: "6412b66799d3a23e507dcdd0",
-  //   };
+  test("getUserProductsList good status", async () => {
+    const body = {
+      userID: globalUser._id,
+    };
 
-  //   const res = await axios.post(
-  //     `${process.env.BACKEND_URL_FOR_TESTS}user/removeFromWishList`,
-  //     body
-  //   );
+    const res = await request.post("/user/getUserProductsList").send(body);
 
-  //   expect(res.status).toBe(200);
-  // });
+    expect(res.statusCode).toBe(200);
+  });
+
+  test("getUserProductsList bad status", async () => {
+    const body = {
+      userID: "",
+    };
+
+    const res = await request.post("/user/getUserProductsList").send(body);
+
+    expect(res.statusCode >= 400).toBe(true);
+  });
+
+  test("addProductToUserProductsList good status", async () => {
+    const body = {
+      userID: globalUser._id,
+      productID: "6412c802a259648cb1fb64ed",
+    };
+    const res = await request
+      .post("/user/addProductToUserProductsList")
+      .send(body);
+
+    expect(res.statusCode).toBe(200);
+  });
+
+  test("addProductToUserProductsList bad status without userID", async () => {
+    const body = {
+      userID: globalUser._id,
+      productID: "6412c802a259648cb1fb64ed",
+    };
+    const res = await request
+      .post("/user/addProductToUserProductsList")
+      .send(body);
+
+    expect(res.statusCode >= 400).toBe(true);
+  });
+
+  test("addProductToUserProductsList bad status without productID", async () => {
+    const body = {
+      userID: globalUser._id,
+      productID: "",
+    };
+    const res = await request
+      .post("/user/addProductToUserProductsList")
+      .send(body);
+
+    expect(res.statusCode >= 400).toBe(true);
+  });
+
+  test("removeProductFromUserProductsList good status", async () => {
+    const body = {
+      userID: globalUser._id,
+      productIDToRemove: "6412b66799d3a23e507dcdd0",
+    };
+
+    const res = await request
+      .post("/user/removeProductFromUserProductsList")
+      .send(body);
+
+    expect(res.statusCode).toBe(200);
+  });
+
+  test("removeProductFromUserProductsList bad status without userID", async () => {
+    const body = {
+      userID: "",
+      productIDToRemove: "6412b66799d3a23e507dcdd0",
+    };
+
+    const res = await request
+      .post("/user/removeProductFromUserProductsList")
+      .send(body);
+
+    expect(res.statusCode >= 400).toBe(true);
+  });
+
+  test("removeProductFromUserProductsList bad status without productIDToRemove", async () => {
+    const body = {
+      userID: globalUser._id,
+      productIDToRemove: "",
+    };
+
+    const res = await request
+      .post("/user/removeProductFromUserProductsList")
+      .send(body);
+
+    expect(res.statusCode >= 400).toBe(true);
+  });
+
+  test("getWishList good status", async () => {
+    const body = {
+      userID: globalUser._id,
+    };
+
+    const res = await request.post("/user/getWishList").send(body);
+
+    expect(res.statusCode).toBe(200);
+  });
+
+  test("getWishList bad status", async () => {
+    const body = {
+      userID: "",
+    };
+
+    const res = await request.post("/user/getWishList").send(body);
+
+    expect(res.statusCode >= 400).toBe(true);
+  });
+
+  test("addToWishList good status", async () => {
+    const body = {
+      userID: globalUser._id,
+      productID: "6412c802a259648cb1fb64ed",
+    };
+
+    const res = await request.post("/user/addToWishList").send(body);
+
+    expect(res.statusCode).toBe(200);
+  });
+
+  test("addToWishList bad status without userID", async () => {
+    const body = {
+      userID: "",
+      productID: "6412c802a259648cb1fb64ed",
+    };
+
+    const res = await request.post("/user/addToWishList").send(body);
+
+    expect(res.statusCode >= 400).toBe(true);
+  });
+
+  test("addToWishList bad status without productID", async () => {
+    const body = {
+      userID: globalUser._id,
+      productID: "",
+    };
+
+    const res = await request.post("/user/addToWishList").send(body);
+
+    expect(res.statusCode >= 400).toBe(true);
+  });
+
+  test("removeFromWishList good status", async () => {
+    const body = {
+      userID: globalUser._id,
+      productIDToRemove: "6412b66799d3a23e507dcdd0",
+    };
+
+    const res = await request.post("/user/removeFromWishList").send(body);
+
+    expect(res.statusCode).toBe(200);
+  });
+
+  test("removeFromWishList bad status without userID", async () => {
+    const body = {
+      userID: "",
+      productIDToRemove: "6412b66799d3a23e507dcdd0",
+    };
+
+    const res = await request.post("/user/removeFromWishList").send(body);
+
+    expect(res.statusCode >= 400).toBe(true);
+  });
+
+  test("removeFromWishList bad status without productIDToRemove", async () => {
+    const body = {
+      userID: globalUser._id,
+      productIDToRemove: "",
+    };
+
+    const res = await request.post("/user/removeFromWishList").send(body);
+
+    expect(res.statusCode >= 400).toBe(true);
+  });
 
   // // test("changeProfilePicture", async () => {
   // //   const body = {
