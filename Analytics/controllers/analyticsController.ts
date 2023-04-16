@@ -19,10 +19,17 @@ const {
 } = require("./assets");
 import { Request, Response } from "express";
 import { AnalyticsType, ProductType, tagarray, tagobj } from "./types";
-
+// TODO: Add GetFeed Function
+// TODO: Fix Search Function
+// TODO: Fix GetFollowingFeed Function
+// TODO: Fix MyTown Function
+// TODO: Sort By Gender
+// TODO: Add sort by location to feed and search
+// TODO: Fix SortByTags, that it would get the existing values instead of overwriting them
 module.exports = {
   // {user_id, productsArr: [{productId, liked:bool, observed, clicks: bool}]}
   AddAnalytics: async (req: Request, res: Response) => {
+    // updates sum and seen/unseen
     const { user_id, productsArr } = req.body;
     const productIds = productsArr.map((p) => p.productId);
 
@@ -52,6 +59,7 @@ module.exports = {
     }
   },
   Search: async (req: Request, res: Response) => {
+    // should only return answer without modifying the seen data
     try {
       const { user_id, input } = req.body;
       const Answer: any[] = [];
