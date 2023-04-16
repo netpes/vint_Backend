@@ -4,7 +4,8 @@ export interface typeUser {
   password: string;
   email: string;
   phone: string;
-  userID?: string;
+  _id?: string;
+  isActive?: boolean;
 }
 
 export interface SingleProduct {

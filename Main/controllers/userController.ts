@@ -38,7 +38,7 @@ const sendEmail = (subject: string, html: string, toEmail: string) => {
   console.log("sendEmail");
 
   try {
-    if (!toEmail.endsWith("@gmail.com")) return;
+    if (!toEmail.endsWith("@gmail.com")) return false;
 
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
@@ -58,15 +58,19 @@ const sendEmail = (subject: string, html: string, toEmail: string) => {
       text: "",
       html: html,
     });
+
+    return true;
   } catch (error) {
     console.log({ message: "Error - Email", err: error });
+    return false;
   }
 };
 
-const createNewEmailVerify = async (res, user, objMessage) => {
+const createNewEmailVerify = async (user) => {
   try {
-    const VerificationCode = Math.round(Math.random() * 899999 + 100000);
+    console.log("createNewEmailVerify");
 
+    const VerificationCode = Math.round(Math.random() * 899999 + 100000);
     sendEmail(
       "Email Verification",
       `<b> Your Code For Verification Is: ${VerificationCode}</b>`,
@@ -78,34 +82,21 @@ const createNewEmailVerify = async (res, user, objMessage) => {
       { code: VerificationCode }
     );
 
-    if (isNewEmailVerify) {
-      user.isActive = false;
-      user.save().then((user) => {
-        res200(res, objMessage);
-      });
-    } else {
-      const newEmailVerify = new EmailVerify({
+    if (!isNewEmailVerify) {
+      const newEmailVerify = await EmailVerify.create({
         userID: user._id,
         code: VerificationCode,
       });
 
-      newEmailVerify.save().then((emailVerify) => {
-        if (!emailVerify)
-          return res400(res, { message: "Failed To Send Verification Code" });
-        else {
-          console.log({ message: "Verification Code sent successfully" });
-
-          user.isActive = false;
-          user.save().then((user) => {
-            res200(res, objMessage);
-          });
-        }
-      });
+      await newEmailVerify.save();
     }
+
+    user.isActive = false;
+    await user.save();
+
+    return true;
   } catch (error) {
-    return res500(res, error, {
-      message: "Error - createNewEmailVerify - User Update",
-    });
+    return false;
   }
 };
 
@@ -123,11 +114,15 @@ const passwordGenerator = (newPasswordLength: number) => {
   return newPassword;
 };
 
+// (userID, newPassword)
 const changePassword = async (req: Request, res: Response) => {
   try {
     console.log("changePassword");
-
     const { userID, newPassword } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(userID) || !newPassword)
+      return res400(res, { message: "Error - changePassword" });
+
     const hashPassword = await bcrypt.hash(newPassword, 10);
 
     User.findByIdAndUpdate(userID, { password: hashPassword }).then((user) => {
@@ -142,11 +137,14 @@ const changePassword = async (req: Request, res: Response) => {
   }
 };
 
-const sendVerifyEmailAgain = (req: Request, res: Response) => {
+// (userID)
+const sendVerifyEmailAgain = async (req: Request, res: Response) => {
   console.log("sendVerifyEmailAgain");
 
   try {
     const { userID } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(userID))
+      return res400(res, { message: "userID false" });
 
     User.findById(userID).then((user) => {
       if (!user) return res400(res, { message: "User not found" });
@@ -154,8 +152,15 @@ const sendVerifyEmailAgain = (req: Request, res: Response) => {
         if (!checkIfEmailValid(user.email)) {
           return res400(res, { message: "This Mail Address Is Not Valid!!!" });
         }
-        createNewEmailVerify(res, user, {
-          message: "User Updated successfully",
+
+        createNewEmailVerify(user).then((isSuccess) => {
+          if (isSuccess) {
+            res200(res, {
+              message: "User Updated successfully",
+            });
+          } else {
+            res500(res, {}, { message: "Error signing up" });
+          }
         });
       }
     });
@@ -164,7 +169,14 @@ const sendVerifyEmailAgain = (req: Request, res: Response) => {
   }
 };
 
-/////// (name,password,email,phone,username)
+export {
+  checkIfEmailValid,
+  sendEmail,
+  createNewEmailVerify,
+  passwordGenerator,
+};
+
+/// (name,password,email,phone,username)
 exports.signUp = async (req: Request, res: Response) => {
   try {
     console.log("signUp");
@@ -176,54 +188,33 @@ exports.signUp = async (req: Request, res: Response) => {
         .json({ message: "This Mail Address Is Not Valid!!!" });
 
     const hashPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({
+
+    const newUser = await User.create({
       ...req.body,
       password: hashPassword,
-      // fastLoadProducts: RandomProducts(4),
     });
+
     newUser.save().then((user) => {
       if (!user) res.status(400).json({ message: "User Creation Failed" });
       else {
-        // Product.find()
-        //   .then((productList) => {
-        //     if (!productList) {
-        //       return res
-        //         .status(400)
-        //         .json({ message: "Error - ProductList null" });
-        //     } else {
-        //       const newAnalytics = new Analytics({
-        //         user_id: user._id,
-        //         unseen: productList,
-        //       });
-        //       // newAnalytics.unseen = productList;
-        //       newAnalytics
-        //         ?.save()
-        //         .then((analytics) => {
-        //           console.log({ message: "Analytics saved successfully" });
-        //         })
-        //         .catch((err) => {
-        //           return res
-        //             .status(500)
-        //             .json({ message: "Error - saving analytics", err });
-        //         });
-        //     }
-        //   })
-        //   .catch((err) => {
-        //     return res
-        //       .status(500)
-        //       .json({ message: "Error - productList", err });
-        //   });
-
         const token = jsonwebtoken.sign(
           { id: user._id },
           process.env.JWT_TOKEN
         );
 
-        createNewEmailVerify(res, user, {
-          message: "User Created",
-          userID: user._id,
-          token,
-          email: email,
+        createNewEmailVerify(user).then((isSuccess) => {
+          console.log(isSuccess);
+
+          if (isSuccess) {
+            res200(res, {
+              message: "User Created",
+              userID: user._id,
+              token,
+              email: email,
+            });
+          } else {
+            res500(res, {}, { message: "Error signing up" });
+          }
         });
       }
     });
@@ -232,10 +223,14 @@ exports.signUp = async (req: Request, res: Response) => {
   }
 };
 
-////// (userID, code)
+/// (userID, code)
 exports.verifyEmail = (req: Request, res: Response) => {
   try {
     console.log("verifyEmail");
+
+    if (!mongoose.Types.ObjectId.isValid(req.body.userID))
+      return res400(res, { message: "userID false" });
+
     EmailVerify.findOne({ userID: req.body.userID }).then((emailVerify) => {
       if (!emailVerify)
         res.status(400).json({ message: "emailVerify not found" });
@@ -274,21 +269,27 @@ exports.verifyEmail = (req: Request, res: Response) => {
   }
 };
 
-//////// (userID)
+/// (userID)
 exports.userInfo = (req: Request, res: Response) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.body.userID))
+      return res400(res, { message: "userID false" });
+
+    const { userID } = req.body;
+    User.findOne({ _id: userID })
+      .populate("userProducts")
+      .then((user) => {
+        res.send(user);
+      });
   } catch (error) {
     res500(res, error, { message: "" });
   }
-  const { userID } = req.body;
-  User.findOne({ _id: userID })
-    .populate("userProducts")
-    .then((user) => {
-      res.send(user);
-    });
 };
 
-/////// (username, password)
+//    expect(res.statusCode >= 400).toBe(true);
+//    expect(res.statusCode).toBe(200);
+
+/// (username, password)
 exports.login = (req: Request, res: Response) => {
   try {
     console.log("login");
@@ -302,27 +303,30 @@ exports.login = (req: Request, res: Response) => {
           { id: user._id },
           process.env.JWT_TOKEN
         );
-        bcrypt.compare(password, user.password).then((bcryptPassword) => {
-          if (!bcryptPassword) {
-            res.status(400).json({ message: "Password incorrect" });
-          } else {
-            User.findByIdAndUpdate(user._id, {
-              loginCounter: user.loginCounter + 1,
-            }).catch(() => {
-              return res
-                .status(400)
-                .json({ message: "login - User Update Failed" });
-            });
 
-            res.status(200).json({
-              message: "User Logged in",
-              userID: user._id,
-              isActive: user.isActive,
-              token,
-              email: req.body.email,
-            });
-          }
-        });
+        bcrypt
+          .compare(password.toString(), user.password)
+          .then((bcryptPassword) => {
+            if (!bcryptPassword) {
+              res.status(400).json({ message: "Password incorrect" });
+            } else {
+              User.findByIdAndUpdate(user._id, {
+                loginCounter: user.loginCounter + 1,
+              }).catch(() => {
+                return res
+                  .status(400)
+                  .json({ message: "login - User Update Failed" });
+              });
+
+              res.status(200).json({
+                message: "User Logged in",
+                userID: user._id,
+                isActive: user.isActive,
+                token,
+                email: req.body.email,
+              });
+            }
+          });
       }
     });
   } catch (err) {
@@ -330,10 +334,12 @@ exports.login = (req: Request, res: Response) => {
   }
 };
 
-///////////////// (userID, newEmail)
+/// (userID, newEmail)
 exports.changeEmail = (req: Request, res: Response) => {
   try {
     const { userID, newEmail } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(userID))
+      return res400(res, { message: "userID false" });
 
     if (!checkIfEmailValid(newEmail))
       return res
@@ -352,7 +358,7 @@ exports.changeEmail = (req: Request, res: Response) => {
   }
 };
 
-/////////// (username)
+/// (username)
 exports.forgotPassword = (req: Request, res: Response) => {
   try {
     const { username } = req.body;
@@ -385,10 +391,12 @@ exports.forgotPassword = (req: Request, res: Response) => {
   }
 };
 
-////////// (userID)
+/// (userID)
 exports.deleteAccount = (req: Request, res: Response) => {
   try {
     const { userID } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(userID))
+      return res400(res, { message: "userID false" });
 
     User.findByIdAndDelete(userID).then((user) => {
       if (!user) res.status(400).json({ message: "User not found" });
@@ -407,10 +415,13 @@ exports.deleteAccount = (req: Request, res: Response) => {
   }
 };
 
-//////////// (token, userID)//////
+/// (token, userID)//////
 exports.verifyToken = async (req: Request, res: Response) => {
   try {
     console.log("verifyToken");
+
+    if (!mongoose.Types.ObjectId.isValid(req.body.userID))
+      return res400(res, { message: "userID false" });
 
     const user = await User.findById(req.body.userID);
     if (!user) {
@@ -425,7 +436,7 @@ exports.verifyToken = async (req: Request, res: Response) => {
       return res.status(200).json({ message: "Verify Token", verify: true });
     } catch (err) {
       console.log("this is err", err);
-      return res.status(200).json({ message: "Unverify Token", verify: false });
+      return res.status(400).json({ message: "Unverify Token", verify: false });
     }
   } catch (err) {
     console.log("this is err", err);
@@ -440,6 +451,9 @@ exports.getUserById = (req: Request, res: Response) => {
   try {
     console.log("getUserById");
 
+    if (!mongoose.Types.ObjectId.isValid(req.body.userID))
+      return res400(res, { message: "userID false" });
+
     User.findById(req.body.userID).then((user) => {
       if (!user) res.status(400).json({ message: "User Not Found" });
       else {
@@ -451,10 +465,8 @@ exports.getUserById = (req: Request, res: Response) => {
   }
 };
 
-// (userID, newPassword)
 exports.changePassword = changePassword;
 
-// / (userID, email)
 exports.sendVerifyEmailAgain = sendVerifyEmailAgain;
 
 //////////// Following List //////////////////////////////////////////////////////////////////
@@ -462,6 +474,9 @@ exports.sendVerifyEmailAgain = sendVerifyEmailAgain;
 exports.getFollowingList = (req: Request, res: Response) => {
   try {
     console.log("getFollowingList");
+
+    if (!mongoose.Types.ObjectId.isValid(req.body.userID))
+      return res400(res, { message: "userID false" });
 
     User.findById(req.body.userID).then((user) => {
       if (!user) res.status(400).json({ message: "User not found" });
@@ -483,6 +498,9 @@ exports.getFollowingList = (req: Request, res: Response) => {
 exports.addSellerToFollowingList = (req: Request, res: Response) => {
   try {
     console.log("addSellerToFollowingList");
+
+    if (!mongoose.Types.ObjectId.isValid(req.body.userID))
+      return res400(res, { message: "userID false" });
 
     User.findById(req.body.userID).then((user) => {
       if (!user) res.status(400).json({ message: "User not found" });
@@ -511,6 +529,9 @@ exports.addSellerToFollowingList = (req: Request, res: Response) => {
 exports.removeSellerFromFollowingList = (req: Request, res: Response) => {
   try {
     console.log("removeSellerFromFollowingList");
+
+    if (!mongoose.Types.ObjectId.isValid(req.body.userID))
+      return res400(res, { message: "userID false" });
 
     User.findById(req.body.userID).then((user) => {
       if (!user) res.status(400).json({ message: "User not found" });
@@ -543,6 +564,9 @@ exports.getUserProductsList = (req: Request, res: Response) => {
   try {
     console.log("getUserProductsList");
 
+    if (!mongoose.Types.ObjectId.isValid(req.body.userID))
+      return res400(res, { message: "userID false" });
+
     User.findById(req.body.userID).then((user) => {
       if (!user) res.status(400).json({ message: "User not found" });
       else {
@@ -565,6 +589,9 @@ exports.getUserProductsList = (req: Request, res: Response) => {
 exports.addProductToUserProductsList = (req: Request, res: Response) => {
   try {
     console.log("addProductToUserProductsList");
+
+    if (!mongoose.Types.ObjectId.isValid(req.body.userID))
+      return res400(res, { message: "userID false" });
 
     User.findById(req.body.userID).then((user) => {
       if (!user) res.status(400).json({ message: "User not found" });
@@ -593,6 +620,9 @@ exports.addProductToUserProductsList = (req: Request, res: Response) => {
 exports.removeProductFromUserProductsList = (req: Request, res: Response) => {
   try {
     console.log("removeProductFromUserProductsList");
+
+    if (!mongoose.Types.ObjectId.isValid(req.body.userID))
+      return res400(res, { message: "userID false" });
 
     User.findById(req.body.userID).then((user) => {
       if (!user) res.status(400).json({ message: "User not found" });
@@ -627,6 +657,9 @@ exports.getWishList = (req: Request, res: Response) => {
   try {
     console.log("getWishList");
 
+    if (!mongoose.Types.ObjectId.isValid(req.body.userID))
+      return res400(res, { message: "userID false" });
+
     User.findById(req.body.userID).then((user) => {
       if (!user) res.status(400).json({ message: "User not found" });
       else {
@@ -648,6 +681,9 @@ exports.getWishList = (req: Request, res: Response) => {
 exports.addToWishList = (req: Request, res: Response) => {
   try {
     console.log("addToWishList");
+
+    if (!mongoose.Types.ObjectId.isValid(req.body.userID))
+      return res400(res, { message: "userID false" });
 
     User.findById(req.body.userID).then((user) => {
       if (!user) res.status(400).json({ message: "User not found" });
@@ -674,6 +710,9 @@ exports.addToWishList = (req: Request, res: Response) => {
 exports.removeFromWishList = (req: Request, res: Response) => {
   try {
     console.log("removeFromWishList");
+
+    if (!mongoose.Types.ObjectId.isValid(req.body.userID))
+      return res400(res, { message: "userID false" });
 
     User.findById(req.body.userID).then((user) => {
       if (!user) res.status(400).json({ message: "User not found" });
