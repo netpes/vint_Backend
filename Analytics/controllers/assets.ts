@@ -195,8 +195,8 @@ module.exports = {
 
     answer.sort((a, b) => b.score - a.score);
     // big probklem here, unseen rest everytime.
-    const newAnalytics = { ...analytics.toObject(), unseen: answer };
-    await Analytics.updateOne({ _id: analytics._id }, newAnalytics);
+    const newAnalytics = { ...analytics?.toObject(), unseen: answer };
+    await Analytics.updateOne({ _id: analytics?._id }, newAnalytics);
 
     return answer;
   },

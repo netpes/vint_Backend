@@ -20,7 +20,7 @@ class Run:
             if output2:
                 print(output2)
 
-    def runEngine(self):
+    def runEngine(self) :
         process1 = subprocess.Popen(self.start, shell=True, cwd="./Main", stdout=subprocess.PIPE)
         process2 = subprocess.Popen(self.start, shell=True, cwd="./Analytics", stdout=subprocess.PIPE)
         while True:

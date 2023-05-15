@@ -88,10 +88,25 @@ module.exports = {
       }
 
       const uniqueAnswer = Array.from(new Set(Answer));
+      console.log(uniqueAnswer)
       return res.json({ answer: uniqueAnswer });
     } catch (e) {
       console.log(e);
       return res.json({ error: e });
+    }
+  },
+  GetFeed: async (req: Request, res: Response) => {
+    try {
+      const {user_id} = req.body;
+      Analytics.findOne({user_id: user_id}).then((analytics): any =>{
+        if (analytics){
+          console.log("thats analytics unseen", analytics?.unseen)
+          res.json(analytics?.unseen)
+        }
+      })
+    } catch (e) {
+      console.log(e)
+      res.send({"error":e})
     }
   },
   GetFollowingFeed: async (req: Request, res: Response) => {
