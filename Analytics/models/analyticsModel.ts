@@ -44,7 +44,7 @@ const analytics_schema = new mongoose.Schema({
         required: false,
       },
       score: { type: Number, default: 0, required: false },
-      //check if i insert products ids !
+      //check if inserted products ids !
     },
   ],
   sellerPreferences: [

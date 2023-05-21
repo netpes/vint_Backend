@@ -19,6 +19,7 @@ const Local_GetProductTags = async (productId) => {
     return [];
   }
 };
+
 module.exports = {
   GetSeen: (user_id) => {
     Analytics.findOne({ user_id: user_id }).then((analytics) => {
@@ -67,7 +68,7 @@ module.exports = {
               }
             } else {
               cases = 3;
-              analytics.unseen = [...new_seen];
+              analytics.unseen =new_seen;
               analytics.seen = [];
               analytics?.markModified("unseen");
               analytics?.markModified("seen");
@@ -88,6 +89,24 @@ module.exports = {
       console.log(err);
     }
   },
+  // :TODO: add filter and update unseen!
+  SortUnseen: async (user_id) =>{
+    try {
+    // Big(O) - O(n)
+      Analytics.findOne({user_id:user_id}).then((analytics)=>{
+        //insert filter here
+        const sorted = analytics.unseen
+        sorted.sort((a,b)=>{
+          return b.score - a.score
+        })
+        analytics.unseen = sorted
+        analytics.save()
+      })
+    } catch(e){
+      console.log(e)
+    }
+  },
+
   GetProductTags: async (productId) => {
     if (productId) {
       const product = await Products.findById(productId);
@@ -182,7 +201,8 @@ module.exports = {
   SortByTags: async (user_id, products) => {
     let analytics = await Analytics.findOne({ user_id: user_id });
     const answer = [];
-
+    console.log("that is products ,", products)
+    //O(N^2)
     products.forEach((product) => {
       let matchRank = 0;
       analytics?.sum.forEach((tag) => {
@@ -192,14 +212,16 @@ module.exports = {
       });
       answer.push({ productId: product._id, score: matchRank });
     });
-
-    answer.sort((a, b) => b.score - a.score);
-    // big probklem here, unseen rest everytime.
+    console.log("this is products", products, " this is answer ", answer)
+// O(N)
+    answer.sort((a, b) => b.score - a.score); //O(N log N)
+    // big problem here, unseen rest everytime.
     const newAnalytics = { ...analytics?.toObject(), unseen: answer };
-    await Analytics.updateOne({ _id: analytics?._id }, newAnalytics);
+    await Analytics.updateOne({ _id: analytics?._id }, {unseen:answer});
 
     return answer;
   },
+
   // seller preferences is the sum of the following sellers publishedProductsSum
   SumSellers: (user_id) => {
     User.findOne({ _id: user_id })
@@ -310,6 +332,11 @@ module.exports = {
   },
   GetProductViaIds: async (productsArr) => {
     Products.find({ _id: { $in: productsArr } }).then((products) => {
+      return products;
+    });
+  },
+  GetProductViaProductId:  async (productsArr) => {
+    Products.find({ _id: { $in: productsArr.map(product=>product.productId) } }).then((products) => {
       return products;
     });
   },

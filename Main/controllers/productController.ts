@@ -45,8 +45,8 @@ module.exports = {
       res.send(true);
     } catch (err) {
       console.log(err);
-      return false;
       res.send(false);
+      return false
     }
   },
   EditProduct: async (req: Request, res: Response) => {

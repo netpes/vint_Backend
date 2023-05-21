@@ -4,6 +4,7 @@ const Analytics = require("../models/analyticsModel");
 const {
   GetProductFromProductArray,
   GetUnseen,
+  GetProductViaProductId,
   AddSeen,
   CalcSummary,
   GetProductTags,
@@ -16,6 +17,7 @@ const {
   SortAnalytics,
   SumSellers,
   GetProductViaIds,
+  SortUnseen
 } = require("./assets");
 import { Request, Response } from "express";
 import { AnalyticsType, ProductType, tagarray, tagobj } from "./types";
@@ -26,7 +28,20 @@ import { AnalyticsType, ProductType, tagarray, tagobj } from "./types";
 // TODO: Sort By Gender
 // TODO: Add sort by location to feed and search
 // TODO: Fix SortByTags, that it would get the existing values instead of overwriting them
+const ReBuildUnseen= async (user_id) => {
+  // O(N ^ 2 + M) N - filtered products, M - Product.find() - this is the old one
+  try {
+    const analytics = await Analytics.findOne({ user_id: user_id });
+    const seenProductIds = new Set(analytics.seen.map(item => item.productId)); // O(N)
 
+    const filteredProducts = await Products.find({ _id: { $nin: [...seenProductIds] } }); //O(1)
+
+    await SortByTags(user_id, filteredProducts); // O(N^2)
+  } catch (e) {
+    console.log(e);
+  }
+
+}
 module.exports = {
   // {user_id, productsArr: [{productId, liked:bool, observed, clicks: bool}]}
   AddAnalytics: async (req: Request, res: Response) => {
@@ -36,9 +51,13 @@ module.exports = {
 
     console.log(productIds);
     try {
-      await AddSeen(user_id, productIds); // add to seen -- tested works!
+      await AddSeen(user_id, productIds); //O(1)
+      // await SortUnseen(user_id) // TODO: check if needed to remove
+      await ReBuildUnseen(user_id) //TODO: check the process, maybe change location
+      // add to seen -- tested works!
       SortAnalytics(user_id, productsArr)
         .then((analytics) => {
+
           // Ensure that analytics data is available before calling CalcSummary()
           CalcSummary(
             user_id,
@@ -105,14 +124,20 @@ module.exports = {
     }
   },
   GetFeed: async (req: Request, res: Response) => {
+    // :TODO: Reset DB and Fill users with true fake data!
     try {
       const {user_id} = req.body;
-      Analytics.findOne({user_id: user_id}).then((analytics): any =>{
+      Analytics.findOne({user_id: user_id}).then(async (analytics) =>{
         if (analytics){
           console.log("thats analytics unseen", analytics?.unseen)
           res.json(analytics?.unseen)
         }
+
+        console.log(await GetProductViaIds(analytics?.unseen))
+      analytics.unseen = SortByTags(user_id, await GetProductViaIds(analytics?.unseen))
+      analytics.seen = SortByTags(user_id, await GetProductViaIds(analytics?.seen))
       })
+      // After :TODO: update product scores on unseen and seen
     } catch (e) {
       console.log(e)
       res.send({"error":e})
